@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
 
-//retrieves data from API - this backend logic will fetch the latest weather data from an external API and return it. The GUI will display that data to the user.
+
 public class WeatherApp {
     //fetch weather data for given location
     public static JSONObject getWeatherData(String locationName) {
@@ -62,6 +62,29 @@ public class WeatherApp {
             //and for that the index of the current hour is needed
             JSONArray time = (JSONArray) hourly.get("time");
             int index = findIndexOfCurrentTime(time);
+
+            //get temperature
+            JSONArray temperatureData = (JSONArray) hourly.get("temperature_2m");
+            double temperature = (double) temperatureData.get(index);
+
+            //get weather code
+            JSONArray weatherCode = (JSONArray) hourly.get("weather_code");
+            String weatherCondition = convertWeatherCode((long) weatherCode.get(index));
+
+            //get humidity
+            JSONArray relativeHumidity = (JSONArray) hourly.get("relative_humidity_2m");
+            long humidity = (long) relativeHumidity.get(index);
+
+            //get wind speed
+            JSONArray windspeedData = (JSONArray) hourly.get("wind_speed_10m");
+            double windspeed = (double) windspeedData.get(index);
+
+            //build the weather JSON data object that the frontend will have access
+            JSONObject weatherData = new JSONObject();
+            weatherData.put("temperature", temperature);
+            weatherData.put("weather_condition", weatherCondition);
+            weatherData.put("humidity", humidity);
+            weatherData.put("windspeed", windspeed);
 
         }catch (Exception e) {
             e.printStackTrace();
@@ -142,8 +165,18 @@ public class WeatherApp {
         //could not make connection
         return null;
     }
+
     private static int findIndexOfCurrentTime(JSONArray timeList) {
         String currentTime = getCurrentTime();
+
+        //iterate through the time list and see which one matches our current time
+        for (int i = 0; i < timeList.size(); i++) {
+            String time = (String) timeList.get(i);
+            if (time.equalsIgnoreCase(currentTime)) {
+                //return the index
+                return i;
+            }
+        }
 
         return 0;
     }
@@ -159,5 +192,25 @@ public class WeatherApp {
         String formattedDateTime = currentDateTime.format(formatter);
 
         return formattedDateTime;
+    }
+
+    private static String convertWeatherCode(long weathercode) {
+        String weatherCondition = "";
+        if (weathercode ==0L) {
+            //clear
+            weatherCondition = "Clear";
+        } else if (weathercode <= 3L && weathercode > 0L) {
+            //Cloudy
+            weatherCondition = "Cloudy";
+        } else if ((weathercode >= 51L && weathercode <= 67L)
+                || (weathercode >= 80L && weathercode <= 99L)) {
+            //Rain
+            weatherCondition = "Rain";
+        } else if (weathercode >= 71L && weathercode <=77L) {
+            //Snow
+            weatherCondition = "Snow";
+        }
+
+        return weatherCondition;
     }
 }
