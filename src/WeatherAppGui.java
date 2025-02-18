@@ -108,6 +108,13 @@ public class WeatherAppGui extends JFrame {
                 //retrieve weather data
                 weatherData = WeatherApp.getWeatherData(userInput);
 
+                // Check if weatherData is null
+                if (weatherData == null) {
+                    JOptionPane.showMessageDialog(WeatherAppGui.this, "Error: Could not retrieve weather data.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+
                 //update GUI
 
                 //update weather image

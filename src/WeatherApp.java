@@ -16,10 +16,18 @@ public class WeatherApp {
         //get location coordinates using the geolocation API
         JSONArray locationData = getLocationData(locationName);
 
+        if (locationData == null || locationData.isEmpty()) {
+            System.out.println("Error: Could not get location data.");
+            return null;
+        }
+
         //extract latitude and longitude data
         JSONObject location = (JSONObject) locationData.get(0);
         double latitude = (double) location.get("latitude");
         double longitude = (double) location.get("longitude");
+
+        // Get the current date in the required format (YYYY-MM-DD)
+        String currentDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
         //build API request URL with location coordinates
         String urlString = "https://api.open-meteo.com/v1/forecast?" +
@@ -27,7 +35,7 @@ public class WeatherApp {
                 "&hourly=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&timezone=America%2FNew_York";
 
         try {
-            //cal API and get response
+            //call API and get response
             HttpURLConnection conn = fetchApiResponse(urlString);
 
             //check for response status code
@@ -50,6 +58,9 @@ public class WeatherApp {
 
             //close url connection
             conn.disconnect();
+
+            // Debug: Print the raw weather API response
+            System.out.println("Weather API Response: " + resultJson.toString());
 
             //parse through the data
             JSONParser parser = new JSONParser();
@@ -85,6 +96,8 @@ public class WeatherApp {
             weatherData.put("weather_condition", weatherCondition);
             weatherData.put("humidity", humidity);
             weatherData.put("windspeed", windspeed);
+
+            return weatherData;
 
         }catch (Exception e) {
             e.printStackTrace();
@@ -128,7 +141,7 @@ public class WeatherApp {
                 conn.disconnect();
 
                 // Debug: Print the raw JSON response
-//                System.out.println("API Response: " + resultJson.toString());
+                System.out.println("API Response: " + resultJson.toString());
 
                 //parse the JSON string into a JSON obj
                 JSONParser parser = new JSONParser();
@@ -168,16 +181,18 @@ public class WeatherApp {
 
     private static int findIndexOfCurrentTime(JSONArray timeList) {
         String currentTime = getCurrentTime();
+        System.out.println("Current Time: " + currentTime);
 
         //iterate through the time list and see which one matches our current time
         for (int i = 0; i < timeList.size(); i++) {
             String time = (String) timeList.get(i);
             if (time.equalsIgnoreCase(currentTime)) {
+                System.out.println("Match found at index: " + i);
                 //return the index
                 return i;
             }
         }
-
+        System.out.println("No match found. Using index 0.");
         return 0;
     }
 
