@@ -26,8 +26,6 @@ public class WeatherApp {
         double latitude = (double) location.get("latitude");
         double longitude = (double) location.get("longitude");
 
-        // Get the current date in the required format (YYYY-MM-DD)
-        String currentDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
         //build API request URL with location coordinates
         String urlString = "https://api.open-meteo.com/v1/forecast?" +
@@ -58,9 +56,6 @@ public class WeatherApp {
 
             //close url connection
             conn.disconnect();
-
-            // Debug: Print the raw weather API response
-            System.out.println("Weather API Response: " + resultJson.toString());
 
             //parse through the data
             JSONParser parser = new JSONParser();
@@ -140,9 +135,6 @@ public class WeatherApp {
                 //close url connection
                 conn.disconnect();
 
-                // Debug: Print the raw JSON response
-                System.out.println("API Response: " + resultJson.toString());
-
                 //parse the JSON string into a JSON obj
                 JSONParser parser = new JSONParser();
                 JSONObject resultJsonObj = (JSONObject) parser.parse(String.valueOf(resultJson));
@@ -181,13 +173,11 @@ public class WeatherApp {
 
     private static int findIndexOfCurrentTime(JSONArray timeList) {
         String currentTime = getCurrentTime();
-        System.out.println("Current Time: " + currentTime);
 
         //iterate through the time list and see which one matches our current time
         for (int i = 0; i < timeList.size(); i++) {
             String time = (String) timeList.get(i);
             if (time.equalsIgnoreCase(currentTime)) {
-                System.out.println("Match found at index: " + i);
                 //return the index
                 return i;
             }
